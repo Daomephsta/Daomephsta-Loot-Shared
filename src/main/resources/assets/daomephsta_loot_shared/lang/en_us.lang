@@ -1,0 +1,17 @@
+#PARSE_ESCAPES
+daomephsta_loot_shared.commands.dump.desc=§2/ct loottables [mode] <args>\n§3Dumps the specified loottable(s)\n§3to <game directory>/dumps
+daomephsta_loot_shared.commands.dump.usage=Usage: ct loottables [mode] <args>\nModes: all | target | byName | list\nArgs: none | none | tableName | none
+daomephsta_loot_shared.commands.dump.unknownSubcommand=Unknown subcommand %s
+daomephsta_loot_shared.commands.dump.all.done=Dumped all loot tables into %s
+daomephsta_loot_shared.commands.dump.all.exception=An unexpected error occured while dumping %s. Check the game log for details.
+daomephsta_loot_shared.commands.missingName=Loot table name required!
+daomephsta_loot_shared.commands.invalidName=Invalid loot table name!
+daomephsta_loot_shared.commands.dump.target.noTable=The target does not have a loot table
+daomephsta_loot_shared.commands.dump.target.noTarget=Nothing in range
+daomephsta_loot_shared.commands.dump.target.senderNotEntity=This command can only be executed by entities
+daomephsta_loot_shared.commands.dump.dumpLink=Dumped loot table %s to %s
+daomephsta_loot_shared.commands.generate.type=Type not specified, specify chest or entity as additional argument
+daomephsta_loot_shared.commands.generate.missingEntityId=An entity ID must be specified
+daomephsta_loot_shared.commands.generate.invalidEntityId=No entity with ID %s exists
+
+loot_carpenter.messages.info.locatingLootTables=All existing loot tables are being located. This may take a few seconds.

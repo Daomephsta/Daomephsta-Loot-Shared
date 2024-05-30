@@ -1,0 +1,27 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "daomephsta.loot_shared.mixin",
+	"compatibilityLevel": "JAVA_8",
+	"mixins": 
+	[
+		"EntityLivingAccessors",
+		"EntityMinecartContainerMixin",
+		"LootConditionManagerAccessors",
+		"LootEntryAccessors",
+		"LootEntryItemAccessors",
+		"LootEntryTableAccessors",
+		"LootFunctionManagerAccessors",
+		"LootPoolAccessors",
+		"LootPoolMixin",
+		"LootTableAccessors",
+		"LootTableManagerLoaderMixin",
+		"LootTableMixin",
+		"LootTableManagerAccessors",
+		"TileEntityLockableLootMixin"
+	],
+	"injectors": {
+	 	"defaultRequire": 1
+	},
+	"refmap": "mixins.daomephsta_loot_shared.refmap.json"
+ }

@@ -1,0 +1,136 @@
+// For those who want the bleeding edge
+plugins {
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '6.0.+'
+    id 'wtf.gofancy.fancygradle' version '1.1.+'
+    // See hack in settings.gradle for why this works
+    id 'org.spongepowered.mixin' version '0.7.+'
+    id 'eclipse'
+}
+// Strip Java 9-specific info from dependencies so Forge doesn't excrete bricks
+apply from: 'java8ify.gradle'
+
+version = "${project.modVersion}+MC${project.minecraftVersion}"
+group = "daomephsta.loot_core" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "DaomephstaLootShared"
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+
+ext.MIXIN_LOADER_CLASS = 'daomephsta.loot_carpenter.MixinLoader'
+
+minecraft {
+    mappings channel: 'stable', version: project.mappingsVersion
+
+    runs {}
+}
+
+fancyGradle {
+    patches {
+        resources
+        coremods
+    }
+}
+
+mixin {
+    add sourceSets.main, 'mixins.loot_carpenter.refmap.json'
+    config 'loot_carpenter.mixins.json'
+}
+
+// FancyGradle isn't quite enough
+configurations.all {
+    resolutionStrategy {
+        dependencySubstitution {
+            substitute module('net.minecraftforge:legacydev') using module('net.minecraftforge:legacydev:0.2.4.+') because 'Fixes ATs'
+        }
+    }
+}
+
+repositories
+{
+    mavenCentral()
+    maven
+    {
+        name "Jared"
+        url "https://maven.blamejared.com"
+    }
+    maven
+    {
+        name 'Su5ed LegacyDev Fork'
+        url = 'https://maven.su5ed.dev/releases'
+    }
+	maven {
+		url = 'https://repo.spongepowered.org/repository/maven-public/'
+		content { includeGroup 'org.spongepowered' }
+	}
+}
+
+dependencies
+{
+    minecraft "net.minecraftforge:forge:${project.minecraftVersion}-${project.forgeVersion}"
+
+    implementation "CraftTweaker2:ZenScript:${project.crafttweakerVersion}"
+    implementation fg.deobf("CraftTweaker2:CraftTweaker2-API:${project.crafttweakerVersion}")
+    implementation fg.deobf("CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-${project.crafttweakerVersion}")
+
+    implementation "org.spongepowered:mixin:0.8.4-SNAPSHOT"
+    annotationProcessor "org.spongepowered:mixin:0.8.4-SNAPSHOT:processor"
+}
+
+if (file("per-machine.properties").exists()) {
+    def perMachine = new Properties()
+    file("per-machine.properties").withInputStream(perMachine.&load)
+
+    tasks.register('deploy', Copy) {
+        group 'build'
+        description 'Copies the JAR into a production environment specified in per-dev.properties'
+    	dependsOn 'build'
+    	mustRunAfter 'build'
+        from jar.archiveFile
+        into file(perMachine.deployDirectory)
+    }
+}
+
+jar {
+    manifest {
+        attributes([
+            "Specification-Title": "Loot Carpenter",
+            "Specification-Vendor": "Daomephsta",
+            "Specification-Version": "1", // We are version 1 of ourselves
+            "Implementation-Title": project.name,
+            "Implementation-Version": "${version}",
+            "Implementation-Vendor": "loot_carpenter",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+            "FMLCorePlugin": MIXIN_LOADER_CLASS,
+            "FMLCorePluginContainsFMLMod": "true",
+            "ForceLoadAsMod": true,
+            "TweakClass": "org.spongepowered.asm.launch.MixinTweaker"
+        ])
+    }
+    finalizedBy('reobfJar')
+}
+
+processResources {
+	inputs.property 'version', project.modVersion
+	filesMatching('mcmod.info') {
+		expand 'version': project.modVersion
+	}
+}
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+task processSource(type: Sync) {
+    from sourceSets.main.java
+    inputs.property 'version', project.modVersion
+    filesMatching('daomephsta/loot_carpenter/LootCarpenter.java') {
+		filter(ReplaceTokens, tokens: ['VERSION': project.modVersion])
+	}
+    into "$buildDir/src"
+}
+
+compileJava {
+    source = processSource.outputs
+}
+
+//When Forge 1.12 loads mods from a directory that's been put on the classpath, it expects to find resources in the same directory.
+//Default Gradle behavior puts resources in ./build/resources/main instead of ./build/classes/main/java. Let's change that.
+sourceSets.all { it.output.resourcesDir = it.output.classesDirs.getFiles().iterator().next() }
