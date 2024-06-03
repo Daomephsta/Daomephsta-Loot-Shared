@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
@@ -90,69 +89,83 @@ public class LootTableFinder
                 //Skip already visited sources
                 if (visitedSources.contains(sourcePath)) continue;
                 LOGGER.debug("Visiting source of {} at {}", mod.getModId(), mod.getSource());
-                visitSource(modClassLoader, sourcePath, this::add);
+                try (Stream<ResourceLocation> idStream = getLootTableIdsFromJar(modClassLoader, sourcePath))
+                {
+					idStream.forEach(this::add);
+                }
                 visitedSources.add(sourcePath);
             }
             LOGGER.info("All existing loot tables located");
             fullScanPerformed = true;
         }
+        // Cannot cache as mods may add to LootTableList at any time due to static init order
         return Stream.of(fileBacked, LootTableList.getAll(), PlaceboCompatibility.getAll())
             .reduce(Sets::union)
             .get(); // Optional cannot be empty as the stream is non-empty
     }
 
-    private void visitSource(ClassLoader modClassLoader, Path sourcePath, Consumer<ResourceLocation> idSubmitter)
+    private Stream<ResourceLocation> getLootTableIdsFromJar(ClassLoader modClassLoader, Path sourcePath)
     {
         try
         {
             if (Files.isDirectory(sourcePath))
             {
-                FileSystem fs = FileSystems.getDefault();
-                Path assetsDir = fs.getPath("assets");
-                if (!Files.exists(assetsDir)) return;
-                walkAssetsDirectory(assetsDir, idSubmitter);
+                return walkAssetsDirectory(FileSystems.getDefault());
             }
-            try (FileSystem fs = getFileSystem(modClassLoader, sourcePath))
-            {
-                Path assetsDir = fs.getPath("assets");
-                if (!Files.exists(assetsDir)) return;
-                walkAssetsDirectory(assetsDir, idSubmitter);
-            }
+            FileSystem fs = FileSystems.newFileSystem(sourcePath, modClassLoader);
+            return walkAssetsDirectory(fs).onClose(() ->
+			{
+				try
+				{
+					fs.close();
+				}
+				catch (IOException e)
+				{
+					LOGGER.error("Failed to close {} filesystem", sourcePath.toAbsolutePath(), e);
+				}
+			});
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            LOGGER.error("Failed to walk {}", sourcePath.toAbsolutePath(), e);
+        	return Stream.empty();
         }
     }
 
-    private FileSystem getFileSystem(ClassLoader modClassLoader, Path sourcePath) throws IOException
+	private Stream<ResourceLocation> walkAssetsDirectory(FileSystem fs) throws IOException
     {
-        return !Files.isDirectory(sourcePath)
-            ? FileSystems.newFileSystem(sourcePath, modClassLoader)
-            : FileSystems.getDefault();
+        Path assetsDir = fs.getPath("assets");
+        if (!Files.exists(assetsDir))
+        	return Stream.empty();
+    	return Files.walk(assetsDir, /*maxDepth*/ 1)
+    		.filter(not(assetsDir::equals))
+        	.map(domain -> domain.resolve("loot_tables"))
+        	.filter(Files::exists)
+        	.flatMap(this::walkLootTablesDirectory);
     }
 
-    private void walkAssetsDirectory(Path assetsDir, Consumer<ResourceLocation> idSubmitter) throws IOException
+    private Stream<ResourceLocation> walkLootTablesDirectory(Path lootTablesDir)
     {
-        for (Path domain : (Iterable<Path>) Files.walk(assetsDir, 1).filter(not(assetsDir::equals))::iterator)
+        try
         {
-            Path lootTablesDir = domain.resolve("loot_tables");
-            if (!Files.exists(lootTablesDir)) continue;
-            walkLootTablesDirectory(lootTablesDir, idSubmitter);
+        	return Files.walk(lootTablesDir)
+            	.filter(lootTable ->
+            	{
+    	            //Just to be extra sure it's a loot table
+    	            String extension = FilenameUtils.getExtension(lootTable.getFileName().toString());
+					return !lootTablesDir.equals(lootTable) && extension.equals("json");
+				})
+            	.map(lootTable ->
+    	        {
+    	            String namespace = lootTablesDir.getName(1).toString();
+    	            String path = FilenameUtils.removeExtension(lootTablesDir.relativize(lootTable).toString());
+    	            return new ResourceLocation(namespace, path);
+    	        });
         }
-    }
-
-    private void walkLootTablesDirectory(Path lootTablesDir, Consumer<ResourceLocation> idSubmitter)
-        throws IOException
-    {
-        for (Path lootTable : (Iterable<Path>) Files.walk(lootTablesDir)
-            .filter(not(lootTablesDir::equals))::iterator)
+        catch (IOException e)
         {
-            //Just to be extra sure it's a loot table
-            if (!FilenameUtils.getExtension(lootTable.getFileName().toString()).equals("json")) continue;
-            String namespace = lootTablesDir.getName(1).toString();
-            String path = FilenameUtils.removeExtension(lootTablesDir.relativize(lootTable).toString());
-            idSubmitter.accept(new ResourceLocation(namespace, path));
-        }
+            LOGGER.error("Failed to walk {}", lootTablesDir.toAbsolutePath(), e);
+        	return Stream.empty();
+		}
     }
 }
