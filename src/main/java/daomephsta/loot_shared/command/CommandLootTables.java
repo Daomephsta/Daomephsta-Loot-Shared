@@ -29,7 +29,7 @@ public class CommandLootTables extends CraftTweakerCommand
 
     public CommandLootTables()
     {
-        super(DaomephstaLootShared.ID);
+        super("loottables");
     }
 
     @Override
