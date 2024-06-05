@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import daomephsta.loot_shared.DaomephstaLootShared;
-import daomephsta.loot_shared.duck.LootLoadingContext;
-import net.minecraft.launchwrapper.Launch;
+import daomephsta.loot_shared.utility.loot.LootLoadingContext;
+import daomephsta.loot_shared.utility.loot.LootNameFixer;
 import net.minecraft.world.storage.loot.LootEntry;
 import net.minecraft.world.storage.loot.LootPool;
 import net.minecraft.world.storage.loot.RandomValueRange;
@@ -27,42 +27,23 @@ public class LootPoolMixin
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void loot_carpenter$uniqueEntryNames(LootEntry[] entries, LootCondition[] conditions,
-        RandomValueRange rolls, RandomValueRange bonusRolls, String name, CallbackInfo info)
+        RandomValueRange rolls, RandomValueRange bonusRolls, String poolName, CallbackInfo info)
     {
-        Set<String> usedNames = new HashSet<>();
-        if (name.startsWith("custom#"))
+        LootLoadingContext.ifAvailableOrElse(context ->
         {
-            name = DaomephstaLootShared.ID + "_fixed_pool_" + LootLoadingContext.get().getPoolDiscriminator();
-            ZEN_LOOT_SANITY_LOGGER.error(
-                "Pool with custom flag found in non-custom table '{}'. Renamed to '{}'.\n" +
-                "Report this to the loot adder.", LootLoadingContext.get().tableId, name);
-            ((LootPoolAccessors) (LootPool) (Object) this).setName(name);
-        }
-        for (LootEntry entry : entries)
-        {
-            if (!usedNames.add(entry.getEntryName()))
+            Set<String> usedNames = new HashSet<>();
+            // Temp variable to make other errors aware of fixed pool names
+            String poolName0 = poolName;
+            if (poolName0.startsWith("custom#"))
+                poolName0 = context.nameFixer.fixCustomPoolName((LootPoolAccessors) this);
+            for (LootEntry entry : entries)
             {
-                String error = String.format("Duplicate entry name '%s' in pool '%s' of table '{}'",
-                    entry.getEntryName(), name, LootLoadingContext.get().tableId);
-                if (!(boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment"))
-                {
-                    String newName = entry.getEntryName() + LootLoadingContext.get().getEntryDiscriminator();
-                    ZEN_LOOT_SANITY_LOGGER.error(
-                        "{}. Duplicate added as '{}'.\n" +
-                        "Report this to the loot adder.", error, newName);
-                    ((LootEntryAccessors) entry).setName(newName);
-                }
-                else
-                    throw new IllegalArgumentException(error);
+                if (!usedNames.add(entry.getEntryName()))
+                    context.nameFixer.deduplicateEntryName(poolName0, entry);
+                else if (entry.getEntryName().startsWith("custom#"))
+                    context.nameFixer.fixCustomEntryName(entry);
             }
-            else if (entry.getEntryName().startsWith("custom#"))
-            {
-                String newName = DaomephstaLootShared.ID + "_fixed_entry_" + LootLoadingContext.get().getEntryDiscriminator();
-                ZEN_LOOT_SANITY_LOGGER.error(
-                    "Entry with custom flag found in non-custom table '{}'. Renamed to '{}'.\n" +
-                    "Report this to the loot adder.", LootLoadingContext.get().tableId, newName);
-                ((LootEntryAccessors) entry).setName(newName);
-            }
-        }
+        },
+        () -> LootNameFixer.ignoreManualPool(poolName));
     }
 }

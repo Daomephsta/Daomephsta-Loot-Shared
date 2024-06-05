@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import daomephsta.loot_shared.duck.LootLoadingContext;
+import daomephsta.loot_shared.utility.loot.LootLoadingContext;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootTable;
 
@@ -13,13 +13,13 @@ import net.minecraft.world.storage.loot.LootTable;
 public abstract class LootTableManagerLoaderMixin
 {
     @Inject(method = "load", at = @At("HEAD"))
-    private void lootweaker$pushContext(ResourceLocation id, CallbackInfoReturnable<LootTable> info)
+    private void daomephsta_loot_shared$pushContext(ResourceLocation id, CallbackInfoReturnable<LootTable> info)
     {
-        LootLoadingContext.push().tableId = id;
+        LootLoadingContext.push(id);
     }
 
     @Inject(method = "load", at = @At("RETURN"))
-    private void lootweaker$popContext(ResourceLocation id, CallbackInfoReturnable<LootTable> info)
+    private void daomephsta_loot_shared$popContext(ResourceLocation id, CallbackInfoReturnable<LootTable> info)
     {
         LootLoadingContext.pop();
     }
