@@ -40,7 +40,7 @@ public class SubcommandDumpTargetsLootTable implements Subcommand
                 {
                     tableId = ((ILootContainer) te).getLootTable();
                     if (tableId == null && te instanceof LootOriginAwareContainer)
-                        tableId = ((LootOriginAwareContainer) te).loot_carpenter$getLootOrigin();
+                        tableId = ((LootOriginAwareContainer) te).daomephsta_loot_shared$getLootOrigin();
                 }
                 else
                     sender.sendMessage(DaomephstaLootShared.translation(".commands.dump.target.noTable"));
@@ -50,7 +50,7 @@ public class SubcommandDumpTargetsLootTable implements Subcommand
                 {
                     tableId = ((EntityLivingAccessors) target.entityHit).callGetLootTable();
                     if (tableId == null && target.entityHit instanceof LootOriginAwareContainer)
-                        tableId = ((LootOriginAwareContainer) target.entityHit).loot_carpenter$getLootOrigin();
+                        tableId = ((LootOriginAwareContainer) target.entityHit).daomephsta_loot_shared$getLootOrigin();
                 }
                 else
                     sender.sendMessage(DaomephstaLootShared.translation(".commands.dump.target.noTable"));

@@ -7,5 +7,5 @@ public interface LootOriginAwareContainer
 {
     static final String NBT_KEY = DaomephstaLootShared.ID + ":loot_origin";
 
-    public ResourceLocation loot_carpenter$getLootOrigin();
+    public ResourceLocation daomephsta_loot_shared$getLootOrigin();
 }

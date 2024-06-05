@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import daomephsta.loot_shared.DaomephstaLootShared;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.eventhandler.ASMEventHandler;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
@@ -19,13 +20,13 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class EventBusInspector
 {
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(DaomephstaLootShared.ID);
 
-    private static Field 
-        listenersField, 
-        listenerOwnersField, 
+    private static Field
+        listenersField,
+        listenerOwnersField,
         ASMEventHandler_subInfoField;
-    static 
+    static
     {
         try
         {
@@ -33,14 +34,14 @@ public class EventBusInspector
             listenerOwnersField = EventBus.class.getDeclaredField("listenerOwners");
             ASMEventHandler_subInfoField = ASMEventHandler.class.getDeclaredField("subInfo");
             AccessibleObject.setAccessible(new Field[] {
-                listenersField, 
+                listenersField,
                 listenerOwnersField,
                 ASMEventHandler_subInfoField
             }, true);
         }
         catch (NoSuchFieldException | SecurityException | IllegalArgumentException e)
         {
-            LOGGER.error("Could not scan Forge event bus. Report to LootTweaker", e);
+            LOGGER.error("Could not scan Forge event bus", e);
             listenersField = listenerOwnersField = ASMEventHandler_subInfoField = null;
         }
     }
@@ -50,7 +51,7 @@ public class EventBusInspector
     {
         if (listenersField == null)
             return Stream.empty();
-        
+
         Map<Object, ? extends List<IEventListener>> listenersByClass;
         Map<Object, ModContainer> listenerOwners;
         try
@@ -60,11 +61,11 @@ public class EventBusInspector
         }
         catch (SecurityException | IllegalArgumentException | IllegalAccessException e)
         {
-            LOGGER.error("Could not scan Forge event bus. Report to LootTweaker", e);
+            LOGGER.error("Could not scan Forge event bus", e);
             return Stream.empty();
         }
-        
-        return listenersByClass.entrySet().stream().flatMap(entry -> 
+
+        return listenersByClass.entrySet().stream().flatMap(entry ->
         {
            ModContainer owner = listenerOwners.get(entry.getKey());
            return entry.getValue().stream()
@@ -81,7 +82,7 @@ public class EventBusInspector
         public final ModContainer owner;
         public final EventPriority priority;
         private String humanReadable;
-        
+
         private Listener(Class<?> eventType, ModContainer owner, EventPriority priority, String humanReadable)
         {
             this.eventType = eventType;
@@ -89,7 +90,7 @@ public class EventBusInspector
             this.priority = priority;
             this.humanReadable = humanReadable;
         }
-        
+
         static Optional<Listener> fromASMEventHandler(ModContainer owner, ASMEventHandler listener)
         {
             Class<?> eventType;
@@ -106,13 +107,13 @@ public class EventBusInspector
                 }
                 catch (ClassNotFoundException e)
                 {
-                    LOGGER.error("Could not get event type for listener {}. Report to LootTweaker", listener, e);
+                    LOGGER.error("Could not get event type for listener {}", listener, e);
                     return Optional.empty();
                 }
             }
             catch (Exception e)
             {
-                LOGGER.error("Could not inspect listener {}. Report to LootTweaker", listener, e);
+                LOGGER.error("Could not inspect listener {}", listener, e);
                 return Optional.empty();
             }
 
@@ -123,12 +124,12 @@ public class EventBusInspector
             }
             catch (IllegalArgumentException | IllegalAccessException e)
             {
-                LOGGER.error("Could not get SubscribeEvent for listener {}. Report to LootTweaker", listener, e);
+                LOGGER.error("Could not get SubscribeEvent for listener {}", listener, e);
                 return Optional.empty();
             }
             return Optional.of(new Listener(eventType, owner, priority, listener.toString()));
         }
-        
+
         @Override
         public String toString()
         {

@@ -13,7 +13,7 @@ import net.minecraft.world.storage.loot.LootPool;
 
 public class LootNameFixer
 {
-    private static final Logger LOOT_TWEAKER_SANITY_LOGGER = LogManager.getLogger(DaomephstaLootShared.ID + ".sanity_checks");
+    private static final Logger SANITY_LOGGER = LogManager.getLogger(DaomephstaLootShared.ID + ".sanity_checks");
     private final LootLoadingContext context;
     private int
         poolDiscriminator = 0,
@@ -36,7 +36,7 @@ public class LootNameFixer
     public String fixCustomPoolName(LootPoolAccessors pool)
     {
         String poolName = DaomephstaLootShared.ID + "_fixed_pool_" + poolDiscriminator;
-        LOOT_TWEAKER_SANITY_LOGGER.error(
+        SANITY_LOGGER.error(
             "Pool with custom flag found in non-custom table '{}'. Renamed to '{}'.\n" +
             "Report this to the loot adder.", context.tableId, poolName);
         pool.setName(poolName);
@@ -55,7 +55,7 @@ public class LootNameFixer
     public void fixCustomEntryName(LootEntry entry)
     {
         String newName = DaomephstaLootShared.ID + "_fixed_entry_" + entryDiscriminator;
-        LOOT_TWEAKER_SANITY_LOGGER.error(
+        SANITY_LOGGER.error(
             "Entry with custom flag found in non-custom table '{}'. Renamed to '{}'.\n" +
             "Report this to the loot adder.", context.tableId, newName);
         ((LootEntryAccessors) entry).setName(newName);
@@ -63,16 +63,16 @@ public class LootNameFixer
 
     public static void ignoreManualPool(String poolName)
     {
-        if (!LOOT_TWEAKER_SANITY_LOGGER.isDebugEnabled())
+        if (!SANITY_LOGGER.isDebugEnabled())
             return;
-        LOOT_TWEAKER_SANITY_LOGGER.debug("Ignored pool {} manually created by\n{}", poolName, getFriendlyStacktrace(4));
+        SANITY_LOGGER.debug("Ignored pool {} manually created by\n{}", poolName, getFriendlyStacktrace(4));
     }
 
     public static void ignoreManualTable()
     {
-        if (!LOOT_TWEAKER_SANITY_LOGGER.isDebugEnabled())
+        if (!SANITY_LOGGER.isDebugEnabled())
             return;
-        LOOT_TWEAKER_SANITY_LOGGER.debug("Ignored table manually created by\n{}", getFriendlyStacktrace(4));
+        SANITY_LOGGER.debug("Ignored table manually created by\n{}", getFriendlyStacktrace(4));
     }
 
     private static StringBuilder getFriendlyStacktrace(int skip)
@@ -91,7 +91,7 @@ public class LootNameFixer
         String error = String.format(errorFormat, errorArgs);
         if (!(boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment"))
         {
-            LOOT_TWEAKER_SANITY_LOGGER.error(
+            SANITY_LOGGER.error(
                 "{}. Duplicate added as '{}'.\n" +
                 "Report this to the loot adder.", error, newName);
         }

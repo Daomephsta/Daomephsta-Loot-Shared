@@ -26,7 +26,7 @@ public class LootPoolMixin
     private static final Logger ZEN_LOOT_SANITY_LOGGER = LogManager.getLogger(DaomephstaLootShared.ID + ".sanity_checks");
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void loot_carpenter$uniqueEntryNames(LootEntry[] entries, LootCondition[] conditions,
+    public void daomephsta_loot_shared$uniqueEntryNames(LootEntry[] entries, LootCondition[] conditions,
         RandomValueRange rolls, RandomValueRange bonusRolls, String poolName, CallbackInfo info)
     {
         LootLoadingContext.ifAvailableOrElse(context ->

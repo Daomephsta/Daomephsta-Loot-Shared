@@ -14,4 +14,4 @@ daomephsta_loot_shared.commands.generate.type=Type not specified, specify chest 
 daomephsta_loot_shared.commands.generate.missingEntityId=An entity ID must be specified
 daomephsta_loot_shared.commands.generate.invalidEntityId=No entity with ID %s exists
 
-loot_carpenter.messages.info.locatingLootTables=All existing loot tables are being located. This may take a few seconds.
+daomephsta_loot_shared.messages.info.locatingLootTables=All existing loot tables are being located. This may take a few seconds.

@@ -22,34 +22,34 @@ import net.minecraftforge.common.util.Constants.NBT;
 public class TileEntityLockableLootMixin implements LootOriginAwareContainer
 {
     @Unique
-    private ResourceLocation loot_carpenter$lootOrigin;
+    private ResourceLocation daomephsta_loot_shared$lootOrigin;
     @Shadow
     protected ResourceLocation lootTable;
 
     @Inject(method = "checkLootAndRead", at = @At("HEAD"))
-    private void loot_carpenter$readNbt(NBTTagCompound nbt, CallbackInfoReturnable<Boolean> info)
+    private void daomephsta_loot_shared$readNbt(NBTTagCompound nbt, CallbackInfoReturnable<Boolean> info)
     {
         if (nbt.hasKey(LootOriginAwareContainer.NBT_KEY, NBT.TAG_STRING))
-            this.loot_carpenter$lootOrigin = new ResourceLocation(nbt.getString(LootOriginAwareContainer.NBT_KEY));
+            this.daomephsta_loot_shared$lootOrigin = new ResourceLocation(nbt.getString(LootOriginAwareContainer.NBT_KEY));
     }
 
     @Inject(method = "checkLootAndWrite", at = @At("HEAD"))
-    private void loot_carpenter$writeNbt(NBTTagCompound nbt, CallbackInfoReturnable<Boolean> info)
+    private void daomephsta_loot_shared$writeNbt(NBTTagCompound nbt, CallbackInfoReturnable<Boolean> info)
     {
-        if (loot_carpenter$lootOrigin != null)
-            nbt.setString(LootOriginAwareContainer.NBT_KEY, loot_carpenter$lootOrigin.toString());
+        if (daomephsta_loot_shared$lootOrigin != null)
+            nbt.setString(LootOriginAwareContainer.NBT_KEY, daomephsta_loot_shared$lootOrigin.toString());
     }
 
     @Inject(method = "fillWithLoot", at = @At(value = "FIELD",
         target = "Lnet/minecraft/tileentity/TileEntityLockableLoot;lootTable:Lnet/minecraft/util/ResourceLocation;", opcode = Opcodes.PUTFIELD))
-    private void loot_carpenter$setGeneratedFrom(@Nullable EntityPlayer player, CallbackInfo info)
+    private void daomephsta_loot_shared$setGeneratedFrom(@Nullable EntityPlayer player, CallbackInfo info)
     {
-        this.loot_carpenter$lootOrigin = this.lootTable;
+        this.daomephsta_loot_shared$lootOrigin = this.lootTable;
     }
 
     @Override
-    public ResourceLocation loot_carpenter$getLootOrigin()
+    public ResourceLocation daomephsta_loot_shared$getLootOrigin()
     {
-        return loot_carpenter$lootOrigin;
+        return daomephsta_loot_shared$lootOrigin;
     }
 }

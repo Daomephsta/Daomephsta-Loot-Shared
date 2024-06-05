@@ -24,7 +24,7 @@ public class LootTableMixin
     private static final Logger ZEN_LOOT_SANITY_LOGGER = LogManager.getLogger(DaomephstaLootShared.ID + ".sanity_checks");
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    public void loot_carpenter$uniquePoolNames(LootPool[] pools, CallbackInfo info)
+    public void daomephsta_loot_shared$uniquePoolNames(LootPool[] pools, CallbackInfo info)
     {
         if (!LootLoadingContext.available())
             LootNameFixer.ignoreManualTable();

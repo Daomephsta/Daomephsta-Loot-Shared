@@ -16,7 +16,7 @@ archivesBaseName = "DaomephstaLootShared"
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
-ext.MIXIN_LOADER_CLASS = 'daomephsta.loot_carpenter.MixinLoader'
+ext.MIXIN_LOADER_CLASS = 'daomephsta.loot_shared.MixinLoader'
 
 minecraft {
     mappings channel: 'stable', version: project.mappingsVersion
@@ -32,8 +32,8 @@ fancyGradle {
 }
 
 mixin {
-    add sourceSets.main, 'mixins.loot_carpenter.refmap.json'
-    config 'loot_carpenter.mixins.json'
+    add sourceSets.main, 'mixins.daomephsta_loot_shared.refmap.json'
+    config 'daomephsta_loot_shared.mixins.json'
 }
 
 // FancyGradle isn't quite enough
@@ -98,7 +98,7 @@ jar {
             "Specification-Version": "1", // We are version 1 of ourselves
             "Implementation-Title": project.name,
             "Implementation-Version": "${version}",
-            "Implementation-Vendor": "loot_carpenter",
+            "Implementation-Vendor": "daomephsta_loot_shared",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
             "FMLCorePlugin": MIXIN_LOADER_CLASS,
             "FMLCorePluginContainsFMLMod": "true",
@@ -121,7 +121,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 task processSource(type: Sync) {
     from sourceSets.main.java
     inputs.property 'version', project.modVersion
-    filesMatching('daomephsta/loot_carpenter/LootCarpenter.java') {
+    filesMatching('daomephsta/loot_shared/DaomephstaLootShared.java') {
 		filter(ReplaceTokens, tokens: ['VERSION': project.modVersion])
 	}
     into "$buildDir/src"
