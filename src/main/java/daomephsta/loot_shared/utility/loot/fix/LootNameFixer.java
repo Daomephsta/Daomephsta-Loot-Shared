@@ -1,4 +1,4 @@
-package daomephsta.loot_shared.utility.loot;
+package daomephsta.loot_shared.utility.loot.fix;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
@@ -8,39 +8,39 @@ import daomephsta.loot_shared.DaomephstaLootShared;
 import daomephsta.loot_shared.mixin.LootEntryAccessors;
 import daomephsta.loot_shared.mixin.LootPoolAccessors;
 import net.minecraft.launchwrapper.Launch;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootEntry;
 import net.minecraft.world.storage.loot.LootPool;
 
 public class LootNameFixer
 {
     private static final Logger SANITY_LOGGER = LogManager.getLogger(DaomephstaLootShared.ID + ".sanity_checks");
-    private final LootLoadingContext context;
+    private final ResourceLocation tableId;
     private int
         poolDiscriminator = 0,
         entryDiscriminator = 0;
 
-    public LootNameFixer(LootLoadingContext context)
+    public LootNameFixer(ResourceLocation tableId)
     {
-        this.context = context;
-    }
+		this.tableId = tableId;
+	}
 
-    public void deduplicatePoolName(LootPool pool)
+	public void deduplicatePoolName(LootPool pool)
     {
         String newName = pool.getName() + poolDiscriminator;
         logOrThrow(newName,
             "Duplicate pool name '%s' in table '%s'",
-            pool.getName(), context.tableId);
+            pool.getName(), tableId);
         ((LootPoolAccessors) pool).setName(newName);
     }
 
-    public String fixCustomPoolName(LootPoolAccessors pool)
+    public void fixCustomPoolName(LootPoolAccessors pool)
     {
         String poolName = DaomephstaLootShared.ID + "_fixed_pool_" + poolDiscriminator;
         SANITY_LOGGER.error(
             "Pool with custom flag found in non-custom table '{}'. Renamed to '{}'.\n" +
-            "Report this to the loot adder.", context.tableId, poolName);
+            "Report this to the loot adder.", tableId, poolName);
         pool.setName(poolName);
-        return poolName;
     }
 
     public void deduplicateEntryName(String poolName, LootEntry entry)
@@ -48,7 +48,7 @@ public class LootNameFixer
         String newName = entry.getEntryName() + entryDiscriminator;
         logOrThrow(newName,
             "Duplicate entry name '%s' in pool '%s' of table '{}'",
-            entry.getEntryName(), poolName, context.tableId);
+            entry.getEntryName(), poolName, tableId);
         ((LootEntryAccessors) entry).setName(newName);
     }
 
@@ -57,7 +57,7 @@ public class LootNameFixer
         String newName = DaomephstaLootShared.ID + "_fixed_entry_" + entryDiscriminator;
         SANITY_LOGGER.error(
             "Entry with custom flag found in non-custom table '{}'. Renamed to '{}'.\n" +
-            "Report this to the loot adder.", context.tableId, newName);
+            "Report this to the loot adder.", tableId, newName);
         ((LootEntryAccessors) entry).setName(newName);
     }
 

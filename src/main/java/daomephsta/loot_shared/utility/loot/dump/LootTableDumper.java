@@ -15,6 +15,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 
 import daomephsta.loot_shared.DaomephstaLootShared;
+import daomephsta.loot_shared.utility.loot.fix.LootFixer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.loot.LootContext;
@@ -69,7 +70,8 @@ public class LootTableDumper
     public File dump(LootTable lootTable, ResourceLocation tableId)
     {
         Preconditions.checkNotNull(lootTable);
-        
+        lootTable = LootFixer.fixTable(lootTable, tableId);
+
         File dump = new File(dumpFolder, tableId.getNamespace() + '/' + tableId.getPath() + ".json");
         try
         {
