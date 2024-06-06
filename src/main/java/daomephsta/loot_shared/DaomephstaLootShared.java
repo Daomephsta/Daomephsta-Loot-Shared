@@ -1,6 +1,7 @@
 package daomephsta.loot_shared;
 
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -8,6 +9,8 @@ import crafttweaker.CraftTweakerAPI;
 import crafttweaker.mc1120.commands.CTChatCommand;
 import daomephsta.loot_shared.command.CommandLootTables;
 import daomephsta.loot_shared.utility.EventBusInspector;
+import daomephsta.loot_shared.utility.Texts;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.LootTableLoadEvent;
@@ -37,6 +40,11 @@ public class DaomephstaLootShared
     public static TextComponentTranslation translation(String keySuffix, Object... args)
     {
         return new TextComponentTranslation(ID + keySuffix, args);
+    }
+
+    public static TextComponentTranslation translation(String keySuffix, Consumer<Style> styler, Object... args)
+    {
+        return Texts.styled(new TextComponentTranslation(ID + keySuffix, args), styler);
     }
 
     /**

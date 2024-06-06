@@ -7,6 +7,7 @@ import daomephsta.loot_shared.duck.LootOriginAwareContainer;
 import daomephsta.loot_shared.mixin.EntityLivingAccessors;
 import daomephsta.loot_shared.utility.Texts;
 import daomephsta.loot_shared.utility.loot.dump.LootTableDumper;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -26,7 +27,7 @@ import net.minecraft.world.storage.loot.ILootContainer;
 public class SubcommandDumpTargetsLootTable implements Subcommand
 {
     @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args)
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
         if (sender instanceof Entity)
         {
@@ -119,5 +120,11 @@ public class SubcommandDumpTargetsLootTable implements Subcommand
     {
         sender.sendMessage(DaomephstaLootShared.translation(".commands.dump.dumpLink",
             Texts.styledAsString(tableId, style -> style.setUnderlined(true)), Texts.fileLink(dump)));
+    }
+    
+    @Override
+    public int getMaxArguments()
+    {
+        return 0;
     }
 }
