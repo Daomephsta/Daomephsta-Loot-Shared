@@ -1,10 +1,22 @@
 package daomephsta.loot_shared;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import crafttweaker.CraftTweakerAPI;
 import crafttweaker.mc1120.commands.CTChatCommand;
 import daomephsta.loot_shared.command.CommandLootTables;
+import daomephsta.loot_shared.utility.EventBusInspector;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.LootTableLoadEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 
 @Mod(
     modid = DaomephstaLootShared.ID, name = DaomephstaLootShared.NAME, version = DaomephstaLootShared.VERSION,
@@ -25,5 +37,40 @@ public class DaomephstaLootShared
     public static TextComponentTranslation translation(String keySuffix, Object... args)
     {
         return new TextComponentTranslation(ID + keySuffix, args);
+    }
+
+    /**
+     * @return the names of LootTweaker and Loot Carpenter, if they're installed
+     */
+    public static Stream<String> getLoadedConsumerNames()
+    {
+		Map<String, ModContainer> modList = Loader.instance().getIndexedModList();
+    	return Stream.of("loottweaker", "loot_carpenter")
+    		.filter(Loader::isModLoaded)
+    		.map(id -> modList.get(id).getName());
+    }
+
+    @Mod.EventHandler
+    public void serverStarted(FMLServerStartedEvent event)
+    {
+        EventBusInspector.getListeners(MinecraftForge.EVENT_BUS)
+            .filter(listener ->
+            {
+                boolean whitelisted = listener.owner.getModId().equals("loottweaker") ||
+                    listener.owner.getModId().equals("loot_carpenter");
+                return !whitelisted && listener.eventType == LootTableLoadEvent.class &&
+                    listener.priority == EventPriority.LOWEST;
+            })
+            .peek(listener ->
+            {
+                CraftTweakerAPI.logInfo(String.format("Found listener for LootTableLoadEvent at lowest priority: %s", listener));
+            })
+            .map(listener -> listener.owner)
+            .distinct()
+            .forEach(mod ->
+            {
+                CraftTweakerAPI.logInfo(String.format("%1$s listens to LootTableLoadEvent at lowest priority. Any loot added by %1$s cannot be edited by {}.",
+                		mod.getName(), getLoadedConsumerNames().collect(Collectors.joining(" or "))));
+            });
     }
 }
