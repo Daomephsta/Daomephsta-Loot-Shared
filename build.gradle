@@ -10,8 +10,8 @@ plugins {
 // Strip Java 9-specific info from dependencies so Forge doesn't excrete bricks
 apply from: 'java8ify.gradle'
 
-version = "${project.modVersion}+MC${project.minecraftVersion}"
-group = "daomephsta.loot_core" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+version = project.modVersion
+group = "daomephsta.loot_shared" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "DaomephstaLootShared"
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
@@ -91,6 +91,7 @@ if (file("per-machine.properties").exists()) {
 }
 
 jar {
+	archiveVersion = "${project.version}+MC${project.minecraftVersion}"
     manifest {
         attributes([
             "Specification-Title": "Loot Carpenter",
