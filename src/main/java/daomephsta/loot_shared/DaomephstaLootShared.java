@@ -5,6 +5,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import crafttweaker.CraftTweakerAPI;
 import crafttweaker.mc1120.commands.CTChatCommand;
 import daomephsta.loot_shared.command.CommandLootTables;
@@ -30,6 +33,7 @@ public class DaomephstaLootShared
     public static final String NAME = "Daomephsta Loot Shared";
     public static final String ID = "daomephsta_loot_shared";
     public static final String VERSION = "@VERSION@";
+    private static final Logger LOGGER = LogManager.getLogger(NAME);
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event)
@@ -64,6 +68,16 @@ public class DaomephstaLootShared
         EventBusInspector.getListeners(MinecraftForge.EVENT_BUS)
             .filter(listener ->
             {
+            	if (listener.owner == null)
+            	{
+            		LOGGER.error("Null owning mod container for listener {}", listener);
+            		return false;
+            	}
+            	if (listener.owner.getModId() == null)
+            	{
+            		LOGGER.error("Null mod id for owning mod container {} of listener {}", listener.owner, listener);
+            		return false;
+            	}
                 boolean whitelisted = listener.owner.getModId().equals("loottweaker") ||
                     listener.owner.getModId().equals("loot_carpenter");
                 return !whitelisted && listener.eventType == LootTableLoadEvent.class &&
