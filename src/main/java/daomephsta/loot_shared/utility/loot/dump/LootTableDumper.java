@@ -15,7 +15,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 
 import daomephsta.loot_shared.DaomephstaLootShared;
+import daomephsta.loot_shared.utility.loot.LootTableFinder;
 import daomephsta.loot_shared.utility.loot.fix.LootFixer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.loot.LootContext;
@@ -62,15 +64,17 @@ public class LootTableDumper
         return dumpFolder;
     }
 
-    public File dump(World world, ResourceLocation tableId)
+    public File dump(MinecraftServer server, World world, ResourceLocation tableId)
     {
-        return dump(world.getLootTableManager().getLootTableFromLocation(tableId), tableId);
+        return dump(server, world.getLootTableManager().getLootTableFromLocation(tableId), tableId);
     }
 
-    public File dump(LootTable lootTable, ResourceLocation tableId)
+    public File dump(MinecraftServer server, LootTable lootTable, ResourceLocation tableId)
     {
         Preconditions.checkNotNull(lootTable);
-        lootTable = LootFixer.fixTable(lootTable, tableId);
+        
+        boolean customFlag = LootTableFinder.DEFAULT.findCustomTable(LootTableFinder.getWorldLootTablesFolder(server), tableId) != null;
+        lootTable = LootFixer.fixTable(lootTable, tableId, customFlag);
 
         File dump = new File(dumpFolder, tableId.getNamespace() + '/' + tableId.getPath() + ".json");
         try
@@ -82,7 +86,7 @@ public class LootTableDumper
                 JsonWriter dumper = gsonInstance.newJsonWriter(writer);
                 dumper.setIndent("  ");
                 JsonObject json = (JsonObject) gsonInstance.toJsonTree(lootTable);
-                json = withInfo(json, lootTable, tableId);
+                json = withInfo(json, lootTable, tableId, customFlag);
                 gsonInstance.toJson(json, dumper);
             }
             LOGGER.info("Loot table {} saved to {}", tableId, dump.getCanonicalPath());
@@ -95,10 +99,17 @@ public class LootTableDumper
         return null;
     }
 
-    private JsonObject withInfo(JsonObject old, LootTable lootTable, ResourceLocation tableId)
+    private JsonObject withInfo(JsonObject old, LootTable lootTable, ResourceLocation tableId, boolean forgeCustomFlag)
     {
         JsonObject info = new JsonObject();
         info.addProperty("id", tableId.toString());
+        if (forgeCustomFlag)
+        {
+        	JsonObject flag = new JsonObject();
+        	flag.addProperty("value", true);
+        	flag.addProperty("__comment", "Tables with the forge custom flag set cannot be modified by mods");
+        	info.add("forgeCustomFlag", flag);
+        }
         // Put info at the top for ease of access
         JsonObject json = new JsonObject();
         json.add(DaomephstaLootShared.ID + ":dump_info", info);

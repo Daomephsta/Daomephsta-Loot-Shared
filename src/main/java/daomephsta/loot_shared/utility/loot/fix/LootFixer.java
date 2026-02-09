@@ -12,7 +12,7 @@ import net.minecraft.world.storage.loot.LootTable;
 
 public class LootFixer
 {
-    public static LootTable fixTable(LootTable table, ResourceLocation tableId)
+    public static LootTable fixTable(LootTable table, ResourceLocation tableId, boolean customTableFlag)
     {
     	LootNameFixer nameFixer = new LootNameFixer(tableId);
 	    Set<String> usedNames = new HashSet<>();
@@ -20,21 +20,21 @@ public class LootFixer
 	    {
 	        if (!usedNames.add(pool.getName()))
 	            nameFixer.deduplicatePoolName(pool);
-	        fixPool(pool, nameFixer);
+	        fixPool(pool, nameFixer, customTableFlag);
 	    }
 	    return table;
     }
 
-	private static void fixPool(LootPool pool, LootNameFixer nameFixer)
+	private static void fixPool(LootPool pool, LootNameFixer nameFixer, boolean customTableFlag)
 	{
         Set<String> usedNames = new HashSet<>();
-        if (pool.getName().startsWith("custom#"))
+        if (pool.getName().startsWith("custom#") && !customTableFlag)
         	nameFixer.fixCustomPoolName((LootPoolAccessors) pool);
         for (LootEntry entry : ((LootPoolAccessors) pool).getEntries())
         {
             if (!usedNames.add(entry.getEntryName()))
                 nameFixer.deduplicateEntryName(pool.getName(), entry);
-            else if (entry.getEntryName().startsWith("custom#"))
+            else if (entry.getEntryName().startsWith("custom#") && !customTableFlag)
                 nameFixer.fixCustomEntryName(entry);
         }
 	}

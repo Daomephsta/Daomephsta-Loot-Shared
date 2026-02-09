@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.collect.Sets;
 
 import daomephsta.loot_shared.compatibility.PlaceboCompatibility;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraftforge.fml.common.Loader;
@@ -157,8 +160,9 @@ public class LootTableFinder
 				})
             	.map(lootTable ->
     	        {
-    	            String namespace = lootTablesDir.getName(1).toString();
-    	            String path = FilenameUtils.removeExtension(lootTablesDir.relativize(lootTable).toString());
+    	            Path relative = lootTablesDir.relativize(lootTable);
+    	            String namespace = relative.getName(0).toString();
+					String path = FilenameUtils.removeExtension(relative.toString());
     	            return new ResourceLocation(namespace, path);
     	        });
         }
@@ -168,4 +172,18 @@ public class LootTableFinder
         	return Stream.empty();
 		}
     }
+    
+    public @Nullable Path findCustomTable(Path worldLootTables, ResourceLocation tableId)
+    {
+    	Path customPath = worldLootTables
+    			.resolve(tableId.getNamespace())
+    			.resolve(tableId.getPath() + ".json");
+		return Files.exists(customPath) ? customPath : null;
+    }
+
+	public static Path getWorldLootTablesFolder(MinecraftServer server) {
+		return server.getActiveAnvilConverter()
+	        .getFile(server.getFolderName(), "data/loot_tables")
+	        .toPath();
+	}
 }

@@ -27,7 +27,7 @@ public class SubcommandDumpAll implements Subcommand
         {
             try
             {
-                dumper.dump(sender.getEntityWorld(), tableId);
+                dumper.dump(server, sender.getEntityWorld(), tableId);
             }
             catch (Exception e)
             {

@@ -30,7 +30,7 @@ public class SubcommandDumpNamed implements Subcommand
             sender.sendMessage(DaomephstaLootShared.translation(".commands.invalidName"));
             return;
         }
-        File dump = LootTableDumper.DEFAULT.dump(sender.getEntityWorld(), tableId);
+        File dump = LootTableDumper.DEFAULT.dump(server, sender.getEntityWorld(), tableId);
         if (!server.isDedicatedServer()) linkDumpFileInChat(sender, dump, tableId);
     }
 

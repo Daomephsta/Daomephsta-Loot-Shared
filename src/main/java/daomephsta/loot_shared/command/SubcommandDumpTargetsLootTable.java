@@ -68,7 +68,7 @@ public class SubcommandDumpTargetsLootTable implements Subcommand
                 sender.sendMessage(DaomephstaLootShared.translation(".commands.dump.target.noTable"));
                 return;
             }
-            File dump = LootTableDumper.DEFAULT.dump(sender.getEntityWorld(), tableId);
+            File dump = LootTableDumper.DEFAULT.dump(server, sender.getEntityWorld(), tableId);
             linkDumpFileInChat(sender, dump, tableId);
         }
         else
