@@ -102,6 +102,7 @@ public class LootTableDumper
     private JsonObject withInfo(JsonObject old, LootTable lootTable, ResourceLocation tableId, boolean forgeCustomFlag)
     {
         JsonObject info = new JsonObject();
+        info.addProperty("__comment", "Ignored when loading loot tables. Included in dumps for development and debugging.");
         info.addProperty("id", tableId.toString());
         if (forgeCustomFlag)
         {
