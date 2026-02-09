@@ -15,7 +15,9 @@
 		"LootPoolAccessors",
 		"LootTableAccessors",
 		"LootTableManagerAccessors",
-		"TileEntityLockableLootMixin"
+		"TileEntityLockableLootMixin",
+		"LootConditionMixin",
+		"LootFunctionMixin"
 	],
 	"injectors": {
 	 	"defaultRequire": 1

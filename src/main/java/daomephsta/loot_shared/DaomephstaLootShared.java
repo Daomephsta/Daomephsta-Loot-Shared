@@ -13,14 +13,19 @@ import crafttweaker.mc1120.commands.CTChatCommand;
 import daomephsta.loot_shared.command.CommandLootTables;
 import daomephsta.loot_shared.utility.EventBusInspector;
 import daomephsta.loot_shared.utility.Texts;
+import daomephsta.loot_shared.zenscript.api.factory.ZenLambdaLootCondition;
+import daomephsta.loot_shared.zenscript.api.factory.ZenLambdaLootFunction;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.storage.loot.conditions.LootConditionManager;
+import net.minecraft.world.storage.loot.functions.LootFunctionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 
@@ -33,7 +38,15 @@ public class DaomephstaLootShared
     public static final String NAME = "Daomephsta Loot Shared";
     public static final String ID = "daomephsta_loot_shared";
     public static final String VERSION = "@VERSION@";
+    public static final String ZEN_PACKAGE = "mods." + ID;
     private static final Logger LOGGER = LogManager.getLogger(NAME);
+    
+    @Mod.EventHandler
+    public void preInit(FMLPreInitializationEvent event)
+    {
+        LootFunctionManager.registerFunction(ZenLambdaLootFunction.SERIALISER);
+        LootConditionManager.registerCondition(ZenLambdaLootCondition.SERIALISER);
+    }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event)
