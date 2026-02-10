@@ -20,9 +20,10 @@ public abstract class LootTableTweakManager
 		this.errorHandler = errorHandler;
 	}
 
-	public static void register(LootTableTweakManager manager)
+	public static <M extends LootTableTweakManager> M register(M manager)
 	{
 		MANAGERS.add(manager);
+		return manager;
 	}
 	
 	public static List<LootTableTweakManager> getManagers() 
