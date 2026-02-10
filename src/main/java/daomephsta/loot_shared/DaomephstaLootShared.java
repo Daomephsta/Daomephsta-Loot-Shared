@@ -1,5 +1,7 @@
 package daomephsta.loot_shared;
 
+import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -13,10 +15,17 @@ import crafttweaker.mc1120.commands.CTChatCommand;
 import daomephsta.loot_shared.command.CommandLootTables;
 import daomephsta.loot_shared.utility.EventBusInspector;
 import daomephsta.loot_shared.utility.Texts;
+import daomephsta.loot_shared.utility.loot.LootTableFinder;
+import daomephsta.loot_shared.utility.loot.dump.LootTableDumper;
+import daomephsta.loot_shared.utility.loot.fix.LootFixer;
 import daomephsta.loot_shared.zenscript.api.factory.ZenLambdaLootCondition;
 import daomephsta.loot_shared.zenscript.api.factory.ZenLambdaLootFunction;
+import daomephsta.loot_shared.zenscript.impl.MutableLootTable;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.conditions.LootConditionManager;
 import net.minecraft.world.storage.loot.functions.LootFunctionManager;
 import net.minecraftforge.common.MinecraftForge;
@@ -27,7 +36,9 @@ import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 @Mod(
     modid = DaomephstaLootShared.ID, name = DaomephstaLootShared.NAME, version = DaomephstaLootShared.VERSION,
@@ -74,6 +85,41 @@ public class DaomephstaLootShared
     		.filter(Loader::isModLoaded)
     		.map(id -> modList.get(id).getName());
     }
+    
+    @Mod.EventHandler
+    public void serverStarting(FMLServerStartingEvent event)
+    {
+    	customTableOverrideWarnings(LootTableFinder.getWorldLootTablesFolder(event.getServer()));
+    	writeNewLootTables(event.getServer());
+    }
+    
+	private void customTableOverrideWarnings(Path worldLootTables) 
+	{
+		for (LootTableTweakManager manager : LootTableTweakManager.getManagers()) 
+		{
+			for (ResourceLocation tableId : manager.getEditedTableIds()) 
+			{
+				Path customTable = LootTableFinder.DEFAULT.findCustomTable(worldLootTables, tableId);
+				if (customTable != null)
+					CraftTweakerAPI.logError(String.format("Cannot edit %s as it is overridden by %s", tableId, customTable.toAbsolutePath()));
+			}
+		}
+	}
+
+	private void writeNewLootTables(MinecraftServer server) 
+	{
+		Path worldLootTables = LootTableFinder.getWorldLootTablesFolder(server);
+		LootTableDumper dumper = LootTableDumper.robust(worldLootTables.toFile());
+		for (LootTableTweakManager manager : LootTableTweakManager.getManagers()) 
+		{
+			Iterator<MutableLootTable> newTables = manager.yieldNewTables();
+			while (newTables.hasNext())
+			{
+				MutableLootTable mutableTable = newTables.next();
+				dumper.dump(server, mutableTable.toImmutable(), mutableTable.getId());
+			}
+		}
+	}
 
     @Mod.EventHandler
     public void serverStarted(FMLServerStartedEvent event)
@@ -91,10 +137,9 @@ public class DaomephstaLootShared
             		LOGGER.error("Null mod id for owning mod container {} of listener {}", listener.owner, listener);
             		return false;
             	}
-                boolean whitelisted = listener.owner.getModId().equals("loottweaker") ||
-                    listener.owner.getModId().equals("loot_carpenter");
-                return !whitelisted && listener.eventType == LootTableLoadEvent.class &&
-                    listener.priority == EventPriority.LOWEST;
+                return listener.eventType == LootTableLoadEvent.class &&
+                    listener.priority == EventPriority.LOWEST &&
+                    !listener.owner.getModId().equals(DaomephstaLootShared.ID);
             })
             .peek(listener ->
             {
@@ -107,5 +152,33 @@ public class DaomephstaLootShared
                 CraftTweakerAPI.logInfo(String.format("%1$s listens to LootTableLoadEvent at lowest priority. Any loot added by %1$s cannot be edited by {}.",
                 		mod.getName(), getLoadedConsumerNames().collect(Collectors.joining(" or "))));
             });
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onTableLoad(LootTableLoadEvent event)
+    {
+		CTLoggingErrorHandler errorHandler = new CTLoggingErrorHandler();
+        if (event.getTable().isFrozen())
+        {
+            LOGGER.debug("Skipped modifying loot table {} because it is frozen", event.getName());
+            return;
+        }
+        // Avoid creating a mutable loot table unless it's necessary
+        MutableLootTable mutable = null;
+        for (LootTableTweakManager manager : LootTableTweakManager.getManagers())
+        {
+        	if (manager.getEditedTableIds().contains(event.getName()))
+        	{
+        		if (mutable == null) 
+        		{
+        	    	// Custom tables don't fire this event
+        	        LootTable table = LootFixer.fixTable(event.getTable(), event.getName(), false);
+					mutable = MutableLootTable.fromTable(table, event.getName(), errorHandler);
+				} 
+            	manager.applyEdits(mutable);
+        	}
+        }
+        if (mutable != null)
+        	event.setTable(mutable.toImmutable());
     }
 }
