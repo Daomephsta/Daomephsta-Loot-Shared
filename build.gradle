@@ -16,8 +16,6 @@ archivesBaseName = "DaomephstaLootShared"
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
-ext.MIXIN_LOADER_CLASS = 'daomephsta.loot_shared.MixinLoader'
-
 minecraft {
     mappings channel: 'stable', version: project.mappingsVersion
 
@@ -101,10 +99,9 @@ jar {
             "Implementation-Version": "${version}",
             "Implementation-Vendor": "daomephsta_loot_shared",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-            "FMLCorePlugin": MIXIN_LOADER_CLASS,
-            "FMLCorePluginContainsFMLMod": "true",
+            "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
             "ForceLoadAsMod": true,
-            "TweakClass": "org.spongepowered.asm.launch.MixinTweaker"
+            "Maven-Artifact": "daomephsta.loot_shared:DaomephstaLootShared:${version}"
         ])
     }
     finalizedBy('reobfJar')
