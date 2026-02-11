@@ -40,6 +40,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+@Mod.EventBusSubscriber
 @Mod(
     modid = DaomephstaLootShared.ID, name = DaomephstaLootShared.NAME, version = DaomephstaLootShared.VERSION,
     dependencies = "required-after:crafttweaker@[4.1.20,); before:jeresources; required:forge@[14.23.5.2779,);"
@@ -155,7 +156,7 @@ public class DaomephstaLootShared
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onTableLoad(LootTableLoadEvent event)
+    public static void onTableLoad(LootTableLoadEvent event)
     {
 		CTLoggingErrorHandler errorHandler = new CTLoggingErrorHandler();
         if (event.getTable().isFrozen())
