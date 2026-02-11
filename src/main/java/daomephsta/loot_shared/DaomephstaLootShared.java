@@ -102,7 +102,7 @@ public class DaomephstaLootShared
 			{
 				Path customTable = LootTableFinder.DEFAULT.findCustomTable(worldLootTables, tableId);
 				if (customTable != null)
-					CraftTweakerAPI.logError(String.format("Cannot edit %s as it is overridden by %s", tableId, customTable.toAbsolutePath()));
+					CraftTweakerAPI.logError(String.format("Cannot edit %s as it is overridden by %s", tableId, customTable));
 			}
 		}
 	}
