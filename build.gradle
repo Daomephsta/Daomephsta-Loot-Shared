@@ -101,6 +101,7 @@ jar {
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
             "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
             "ForceLoadAsMod": true,
+            "FMLCorePluginContainsFMLMod": "true", // Prevents the mod being loaded twice on dedicated servers
             "Maven-Artifact": "daomephsta.loot_shared:DaomephstaLootShared:${version}"
         ])
     }
