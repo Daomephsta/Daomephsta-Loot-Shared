@@ -10,15 +10,17 @@ daomephsta_loot_shared.commands.dump.openDocs=Click to open documentation in web
 
 daomephsta_loot_shared.commands.dump.unknownSubcommand=Unknown subcommand %s
 daomephsta_loot_shared.commands.dump.all.done=Dumped all loot tables into %s
-daomephsta_loot_shared.commands.dump.all.exception=An unexpected error occured while dumping %s. Check the game log for details.
+daomephsta_loot_shared.commands.dump.all.exception=An unexpected error occurred while dumping %s. Check the game log for details.
 daomephsta_loot_shared.commands.missingName=Loot table name required!
-daomephsta_loot_shared.commands.invalidName=Invalid loot table name!
+daomephsta_loot_shared.commands.invalidName=Invalid loot table name %s
 daomephsta_loot_shared.commands.dump.target.noTable=The target does not have a loot table
 daomephsta_loot_shared.commands.dump.target.noTarget=Nothing in range
 daomephsta_loot_shared.commands.dump.target.senderNotEntity=This command can only be executed by entities
 daomephsta_loot_shared.commands.dump.dumpLink=Dumped loot table %s to %s
-daomephsta_loot_shared.commands.generate.type=Type not specified, specify chest or entity as additional argument
-daomephsta_loot_shared.commands.generate.missingEntityId=An entity ID must be specified
-daomephsta_loot_shared.commands.generate.invalidEntityId=No entity with ID %s exists
+daomephsta_loot_shared.commands.generate.type.missing=Type not specified, specify chest or entity as additional argument
+daomephsta_loot_shared.commands.generate.type.unknown=Unknown type %s. Valid types are chest or entity.
+daomephsta_loot_shared.commands.generate.entityId.missing=An entity ID must be specified
+daomephsta_loot_shared.commands.generate.entityId.invalid=No entity with ID %s exists
+daomephsta_loot_shared.commands.generate.nbtError=NBT parsing failed. See the game log for more information.
 
 daomephsta_loot_shared.messages.info.locatingLootTables=All existing loot tables are being located. This may take a few seconds.

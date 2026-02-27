@@ -73,7 +73,7 @@ public class DaomephstaLootShared
 
     public static TextComponentTranslation translation(String keySuffix, Consumer<Style> styler, Object... args)
     {
-        return Texts.styled(new TextComponentTranslation(ID + keySuffix, args), styler);
+        return Texts.styled(translation(keySuffix, args), styler);
     }
 
     /**

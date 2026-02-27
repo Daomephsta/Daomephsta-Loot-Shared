@@ -41,10 +41,11 @@ public class SubcommandGenerate implements Subcommand
         if (!type.equals("chest") && !type.equals("entity"))
             throw Subcommand.wrongUsage(".commands.generate.type.unknown", type);
 
+        if (args.length < 3)
+            throw Subcommand.wrongUsage(".commands.missingName");
         ResourceLocation tableId = new ResourceLocation(args[2]);
-
         if (!LootTableFinder.DEFAULT.exists(tableId))
-            throw Subcommand.wrongUsage(".messages.error.invalidTableName", tableId);
+            throw Subcommand.wrongUsage(".commands.invalidName", tableId);
 
         RayTraceResult target = sender.getCommandSenderEntity().rayTrace(8.0F, 1.0F);
         if (target.typeOfHit == RayTraceResult.Type.BLOCK)
@@ -69,7 +70,7 @@ public class SubcommandGenerate implements Subcommand
         ResourceLocation tableId) throws CommandException
     {
         if (args.length < 4)
-            throw Subcommand.wrongUsage(".commands.generate.missingEntityId");
+            throw Subcommand.wrongUsage(".commands.generate.entityId.missing");
         boolean hasNbt = false;
         NBTTagCompound nbt;
         if (args.length == 5)
@@ -92,7 +93,7 @@ public class SubcommandGenerate implements Subcommand
             nbt = new NBTTagCompound();
         String id = args[3];
         if (!EntityList.isRegistered(new ResourceLocation(id)))
-            throw Subcommand.wrongUsage(".commands.generate.invalidEntityId", id);
+            throw Subcommand.wrongUsage(".commands.generate.entityId.invalid", id);
         // Set both, as unused entity NBT keys are simply discarded 
         nbt.setString("LootTable", tableId.toString());
         nbt.setString("DeathLootTable", tableId.toString());

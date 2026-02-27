@@ -27,7 +27,7 @@ public class SubcommandDumpNamed implements Subcommand
         ResourceLocation tableId = new ResourceLocation(args[1]);
         if (!LootTableFinder.DEFAULT.exists(tableId))
         {
-            sender.sendMessage(DaomephstaLootShared.translation(".commands.invalidName"));
+            sender.sendMessage(DaomephstaLootShared.translation(".commands.invalidName", tableId));
             return;
         }
         File dump = LootTableDumper.DEFAULT.dump(server, sender.getEntityWorld(), tableId);
